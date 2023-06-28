@@ -32,3 +32,18 @@ THEN I am prompted to enter the employee’s first name, last name, role, and ma
 WHEN I choose to update an employee role
 
 THEN I am prompted to select an employee to update and their new role and this information is updated in the database
+
+---
+
+## Bonus
+Try to add some additional functionality to your application, such as the ability to do the following:
+
+Update employee managers.
+
+View employees by manager.
+
+View employees by department.
+
+Delete departments, roles, and employees.
+
+View the total utilized budget of a department—in other words, the combined salaries of all employees in that department.
