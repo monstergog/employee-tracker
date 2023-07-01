@@ -1,6 +1,6 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
-const {questions, newEmployee, newRole, newDepartment} = require('./lib/utils/questions.js');
+const {questions, newEmployee, newRole, newDepartment, updateEmployee} = require('./lib/utils/questions.js');
 require('dotenv').config();
 require('console.table');
 
@@ -16,7 +16,11 @@ const db = mysql.createConnection(
 );
 
 function viewTable(table) {
-  db.query(`SELECT * FROM ${table}`, function (err, results) {
+  db.query(`SELECT * FROM ${table}`, (err, results) => {
+    if (err) {
+      console.error('Error adding employee:', err);
+      return;
+    }
     console.log();
     console.table(results);
     init();
@@ -25,8 +29,13 @@ function viewTable(table) {
 
 function addDepartment(data) {
   db.query(`INSERT INTO departments (name)
-  VALUES ('${data.name}')`,
-  function (err, results) {
+  VALUES (?)`,
+  [data.name],
+  (err, results) => {
+    if (err) {
+      console.error('Error adding employee:', err);
+      return;
+    }
     console.log('New Department Added')
     init();
   });
@@ -34,20 +43,50 @@ function addDepartment(data) {
 
 function addRole(data) {
   db.query(`INSERT INTO roles (title, salary, department_id)
-  VALUES (${data.title}, ${data.salary}, ${data.departmentID})`,
-  function (err, results) {
+  VALUES (? , ? , ?)`,
+  [data.title, data.salary, data.departmentID],
+  (err, results) => {
+    if (err) {
+      console.error('Error adding employee:', err);
+      return;
+    }
     console.log('New Role Added')
     init()
   });
 }
 
 function addEmployee(data) {
-  db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id)
-  VALUES (${data.firstName}, ${data.lastName}, ${data.roleID}, ${data.managerID})`,
-  function (err, results) {
-    console.log('New Employee Added')
-    init();
-  });
+  const managerID = data.managerID.trim() === '' ? null : data.managerID;
+
+  db.query(
+    `INSERT INTO employees (first_name, last_name, role_id, manager_id)
+    VALUES (?, ?, ?, ?)`,
+    [data.firstName, data.lastName, data.roleID, managerID],
+    (err, results) => {
+      if (err) {
+        console.error('Error adding employee:', err);
+        return;
+      }
+      console.log('New Employee Added');
+      init();
+    }
+  );
+}
+
+function updateEmployeeData(data) {
+  db.query(
+    `UPDATE employees
+    SET role_id = ${data.updateRole}
+    WHERE id = ${data.id}`,
+    (err, results) => {
+      if (err) {
+        console.error('Error updating employee:', err);
+        return;
+      }
+      console.log('Employee Updated');
+      init();
+    }
+  );
 }
 
 // Function to prompt user for input and sent to be written
@@ -62,6 +101,7 @@ async function init() {
         inquirer.prompt(newEmployee).then((employeeData) => addEmployee(employeeData));
         break;
       case 'Update Employee Role':
+        inquirer.prompt(updateEmployee).then((updateData) => updateEmployeeData(updateData));
         break;
       case 'View All Roles':
         viewTable('roles');
@@ -74,6 +114,9 @@ async function init() {
         break;
       case 'Add Department':
         inquirer.prompt(newDepartment).then((departmentData) => addDepartment(departmentData));
+        break;
+      case 'Quit':
+        db.end();
         break;
     }
   }))
