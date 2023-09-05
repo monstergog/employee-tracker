@@ -1,6 +1,6 @@
 const db = require('./lib/config/connection.js')
 const inquirer = require('inquirer');
-const {questions, updateEmployee} = require('./lib/utils/questions.js');
+const { questions } = require('./lib/utils/questions.js');
 require('console.table');
 
 function viewAllEmployees() {
@@ -152,7 +152,7 @@ function getRoles() {
   });
 }
 
-function getManagers() {
+function getEmployees() {
   return new Promise((resolve, reject) => {
     db.query(`SELECT id, first_name, last_name FROM employees`, (err, results) => {
       if (err) {
@@ -181,8 +181,8 @@ async function init() {
         (async () => {
           try {
             let roles = await getRoles();
-            let managers = await getManagers();
-            managers.unshift({ name: 'None', value: null})
+            let employees = await getEmployees();
+            employees.unshift({ name: 'None', value: null})
             inquirer.prompt([
               {
                   type: 'input',
@@ -204,7 +204,7 @@ async function init() {
                   type: 'list',
                   name: 'managerID',
                   message: 'Who is the manager of this new employee:',
-                  choices: managers
+                  choices: employees
               }
           ]).then((employeeData) => addEmployee(employeeData));
           }
@@ -214,7 +214,28 @@ async function init() {
         })();
         break;
       case 'Update Employee Role':
-        inquirer.prompt(updateEmployee).then((updateData) => updateEmployeeData(updateData));
+        (async () => {
+          try {
+            let employees = await getEmployees();
+            let roles = await getRoles();
+            inquirer.prompt([
+              {
+                  type: 'list',
+                  name: 'id',
+                  message: 'Which employee are you updating:',
+                  choices: employees
+              },
+              {
+                  type: 'list',
+                  name: 'updateRole',
+                  message: 'What will the employees new role be:',
+                  choices: roles
+              }
+            ]).then((updateData) => updateEmployeeData(updateData));
+          } catch (error) {
+            console.error(error);
+          }
+        })();
         break;
       case 'View All Roles':
         viewAllRoles();
@@ -250,7 +271,13 @@ async function init() {
         viewAllDepartments();
         break;
       case 'Add Department':
-        inquirer.prompt(newDepartment).then((departmentData) => addDepartment(departmentData));
+        inquirer.prompt([
+          {
+              type: 'input',
+              name: 'name',
+              message: 'What is name of the new department:'
+          }
+      ]).then((departmentData) => addDepartment(departmentData));
         break;
       case 'Quit':
         db.end();
