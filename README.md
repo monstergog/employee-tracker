@@ -1,16 +1,18 @@
 # employee-tracker
 
----
+## Description
 
-## Bonus
-Try to add some additional functionality to your application, such as the ability to do the following:
+A CLI based program as a simple employee management program using MySQL that lets you view / add employees, roles, and departments to keep track of.
 
-Update employee managers.
+## Installation
 
-View employees by manager.
+Before downloading the repo, make sure you have node.js installed. After that, install the repo and use the command line to reach the downloaded repo's directory. Run 'npm install', then run `node index.js`.
 
-View employees by department.
+## Usage
 
-Delete departments, roles, and employees.
+After running starting the program with `node index.js`, follow the prompts on the command line.
 
-View the total utilized budget of a department—in other words, the combined salaries of all employees in that department.
+![alt text](lib/img/screenshot.png)
+
+## License
+N/A
